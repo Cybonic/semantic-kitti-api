@@ -21,7 +21,7 @@ from vispy.plot import Fig
 class SemanticKittiTool:
     """ Class that creates and handles point cloud data for other application"""
 
-    def __init__(self, scan, scan_names, label_names,config, obj, offset=0,
+    def __init__(self, scan, scan_names, label_names,config,  bbox_path, obj, offset=0,
                  semantics=True, instances=False):
         self.scan = scan
         self.scan_names = scan_names
@@ -33,7 +33,8 @@ class SemanticKittiTool:
         self.instances = instances
         self._labels_of_interest_name = yaml.load(open(obj))
         self._labels_of_interest_num = self.GetLabelIdx(self._labels_of_interest_name)
-        self.sizepoints =1
+        self.sizepoints = 1
+        self._bbox_path = bbox_path # path where bounding boxes will be stored
 
         self._scan_labels = dict([('inst',[]),('sem',[])])
          # make instance colors
@@ -80,7 +81,23 @@ class SemanticKittiTool:
         # MergeColorFlag=0 - Create a color frame for each object
         bboxes,scan_color_all_obj = self.Create3DBoundingBoxes(self.scan_pts,self.scan_labels,MergeColorFlag=1)
         
-        #Save3DBoundingBox(self,bboxes,bboxpath)
+        file_name = str(self.offset) + ".txt"
+        bbox_path = os.path.join(self._bbox_path,"boundingbox")
+
+        if os.path.isdir(bbox_path):
+            bboxpath = bbox_path
+        else:
+            try:
+                access_rights = 0x755
+                os.makedirs(bbox_path,access_rights)
+                bboxpath = bbox_path
+            except OSError:
+                print ("Creation of the directory %s failed" % bbox_path)
+            else:
+                print ("Successfully created the directory %s " % bbox_path)
+
+        file_path = os.path.join(bboxpath,file_name)
+        self.Save3DBoundingBox(bboxes,file_path)
 
         # Plot objects & bounding boxes
         #shape = len(list(scan_color_all_obj))
@@ -104,8 +121,22 @@ class SemanticKittiTool:
         #self.SaveBoundingBoxes(boundingboxes)
     def Save3DBoundingBox(self,bboxes,filepath):
 
-        print("bbox")
-
+        # Check if file exist
+        if os.path.isfile(filepath): 
+            # append new data to the file
+            f = open(filepath, "a")
+        else: # create the file
+            f = open(filepath, "w")
+        
+        for obj in bboxes.items():
+            f.write("%s: " % obj[0])
+            for bb in obj[1]:
+                pts = bb['bb']['vertices']
+                for l in range(0, pts.shape[0]):
+                    for c in range(0, pts.shape[1]):
+                        f.write("%lf " % pts[l,c])
+            f.write("\n")
+        f.close()
 
     def Color3DBoundingBox(self,bboxes,colorframe = []):
 
