@@ -90,7 +90,8 @@ if __name__ == "__main__":
   # Small example of the usage.
   
   # Replace "/path/to/semantic/kitti/" with actual path to the folder containing the "sequences" folder
-  dataset = SSCDataset("/path/to/semantic/kitti/")
+  PATH_TO_KITTI = "E:\DATASETS\Kitti\dataset"
+  dataset = SSCDataset(PATH_TO_KITTI)
   print("# files: {}".format(len(dataset)))
 
   (seq, filename), data = dataset[100]

@@ -21,7 +21,7 @@ if __name__ == '__main__':
       '--config', '-c',
       type=str,
       required=False,
-      default="config/semantic-kitti.yaml",
+      default="config/semantic_kitti_short.yaml",
       help='Dataset config file. Defaults to %(default)s',
   )
   FLAGS, unparsed = parser.parse_known_args()

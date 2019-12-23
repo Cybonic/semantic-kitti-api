@@ -234,6 +234,7 @@ class SemLaserScan(LaserScan):
 
     # set it
     self.set_label(label)
+    return(label)
 
   def set_label(self, label):
     """ Set points for label not from file but from np
@@ -256,6 +257,7 @@ class SemLaserScan(LaserScan):
 
     if self.project:
       self.do_label_projection()
+
 
   def colorize(self):
     """ Colorize pointcloud with the color of each semantic label

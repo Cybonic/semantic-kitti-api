@@ -1,0 +1,66 @@
+# This file is covered by the LICENSE file in the root of this project.
+labels: 
+  10: "car"
+  20: "other-vehicle"
+  52: "other-structure"
+  71: "trunk"
+  80: "pole"
+  81: "traffic-sign"
+  99: "other-object"
+color_map: # bgr
+  10: [245, 150, 100]
+  20: [255, 0, 0]
+  52: [0, 150, 255]
+  71: [0, 60, 135]
+  80: [150, 240, 255]
+  81: [0, 0, 255]
+  99: [255, 255, 50]
+content: # as a ratio with the total number of points
+  10: 0.040818519255974316
+  20: 0.0016218197275284021
+  52: 0.002395131480328884
+  71: 0.006035012012626033
+  80: 0.002855498193863172
+  81: 0.0006155958086189918
+  99: 0.009923127583046915
+# classes that are indistinguishable from single scan or inconsistent in
+# ground truth are mapped to their closest equivalent
+learning_map:
+  10: 1     # "car"
+  20: 3     # "other-vehicle"
+  52: 0     # "other-structure" mapped to "unlabeled" ------------------mapped
+  71: 4    # "trunk"
+  80: 5    # "pole"
+  81: 6    # "traffic-sign"
+  99: 0     # "other-object" to "unlabeled" ----------------------------mapped
+learning_map_inv: # inverse of previous map
+  1: 10     # "car"
+  5: 20     # "other-vehicle"
+  16: 71    # "trunk"
+  17: 72    # "terrain"
+  18: 80    # "pole"
+  19: 81    # "traffic-sign"
+learning_ignore: # Ignore classes
+  0: True      # "unlabeled", and others ignored
+  1: False     # "car"
+  2: False     # "truck"
+  3: False     # "other-vehicle"
+  4: False    # "trunk"
+  5: False    # "pole"
+  6: False    # "traffic-sign"
+split: # sequence numbers
+  train:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 9
+    - 10
+  valid:
+    - 8
+  test:
+    - 11
