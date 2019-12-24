@@ -84,17 +84,16 @@ class SemanticKittiTool:
         
         file_name = str(self.offset) + ".txt"
        
-        
         self.Save3DBoundingBox(bboxes,file_name)
 
         # Plot objects & bounding boxes
         #shape = len(list(scan_color_all_obj))
         shape = len(scan_color_all_obj.shape)
 
-        if shape==1: # Plot all objects with different colors (MergeColorFlag=1 )
-            scan_pts,scan_labels = self.Color3DBoundingBox(bboxes,scan_color_all_obj)
-            self.colorizeObject(scan_labels)
-            self.PlotPcl(scan_pts)
+        #if shape==1: # Plot all objects with different colors (MergeColorFlag=1 )
+        #    scan_pts,scan_labels = self.Color3DBoundingBox(bboxes,scan_color_all_obj)
+        #    self.colorizeObject(scan_labels)
+        #    self.PlotPcl(scan_pts)
 
         #else: # Plot all instances of each object class at a time
         #    for scan_color in scan_color_all_obj:
@@ -103,8 +102,8 @@ class SemanticKittiTool:
         #        self.PlotPcl(scan_pts)
 
 
-        #self.colorize(self.scan_labels)
-        #self.PlotPcl(self.scan_pts)
+        self.colorize(self.scan_labels)
+        self.PlotPcl(self.scan_pts)
             
         #self.SaveBoundingBoxes(boundingboxes)
     def Save3DBoundingBox(self,bboxes,filename):
@@ -125,20 +124,27 @@ class SemanticKittiTool:
 
         file_path = os.path.join(true_label_path,filename) # full file path
 
-        labels = kitti.Object3d.loadParameters()
+        for bbox in bboxes.items():
 
-        labels.loadBox3D()
-        kitti.write_label(labels,file_path)
+            kitti_labels = self.conv_to_kitti_format(bbox)
+            kitti.write_label(kitti_labels,file_path)
 
-        #for obj in bboxes.items():
-        #    f.write("%s: " % obj[0])
-        #    for bb in obj[1]:
-        #        pts = bb['bb']['vertices']
-        #        for l in range(0, pts.shape[0]):
-        #            for c in range(0, pts.shape[1]):
-        #                f.write("%lf " % pts[l,c])
-        #    f.write("\n")
-        #f.close()
+
+    def conv_to_kitti_format(self,bbox):
+
+        label = kitti.Object3d()
+        labels = []
+        for obj in bbox[1]:
+            objtype = bbox[0]
+            w = obj['w']
+            h = obj['h']
+            l = obj['l']
+            rz = obj['rz']
+            t = obj['t']
+            score = 1
+            label.loadBox3D(objtype,h,w,l,t,rz,score)
+            labels.append(label)
+        return(labels)
 
     def Color3DBoundingBox(self,bboxes,colorframe = []):
 
@@ -149,8 +155,7 @@ class SemanticKittiTool:
         for classname,data in bboxes.items():
             for idx in range(0,len(data)):
                 vertices = np.asarray(data[idx]['bb']['vertices'])
-                #vertices = bb
-                #vertices = np.array(list())
+
                 if(len(bb_pts[:]) == 0):
                     bb_pts = vertices
                 else:
@@ -209,17 +214,17 @@ class SemanticKittiTool:
         for name,segment in SegmentIdx.items():
         
             if(MergeColorFlag):
-                single_class_objects,segment_scan_color = self.SegmentClustering(ScanPts,
+                bbox,single_class_objects,segment_scan_color = self.SegmentClustering(ScanPts,
                                                                                  segment,
                                                                                  label_color_scan)
                 label_color_scan = segment_scan_color
             else:
-                single_class_objects,segment_scan_color = self.SegmentClustering(ScanPts,
+                bbox,single_class_objects,segment_scan_color = self.SegmentClustering(ScanPts,
                                                                                  segment,
                                                                                  [])
                 label_color_scan.append(segment_scan_color)
             
-            objects.update({name:single_class_objects})
+            objects.update({name:bbox})
             
         return(objects,label_color_scan)
 
@@ -246,7 +251,7 @@ class SemanticKittiTool:
         num_instances    = int(max(db.labels_))
         candidates       = np.array(db.labels_)
         instance_boundle = []
-
+        bbox_list        = []
         for inst_label in  range(0,num_instances):
 
             inst_index = np.where(candidates == inst_label)
@@ -255,11 +260,11 @@ class SemanticKittiTool:
             segment_scan_color[instance_index] = int(max_value + inst_label)
 
             bb = self.Campute3DBoundingBox(instance_points)
-
+            bbox_list.append(bb)
             instance = dict([('bb', bb),('idx',instance_index)])
             instance_boundle.append(instance)
 
-        return(instance_boundle,segment_scan_color)
+        return(bbox_list,instance_boundle,segment_scan_color)
 
     
 
@@ -286,7 +291,7 @@ class SemanticKittiTool:
         # ....
         rz = 0
 
-        # get 3D bounding box bounderies 
+        # Get 3D bounding box bounderies 
         x = pts[0,:]
         y = pts[1,:]
         z = pts[2,:]

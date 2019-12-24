@@ -8,36 +8,8 @@ import os
 
 class Object3d(object):
     ''' 3d object label '''
-    def __init__(self, label_file_line):
-        data = label_file_line.split(' ')
-        data[1:] = [float(x) for x in data[1:]]
-        # extract label, truncation, occlusion
-        self.type = data[0] # 'Car', 'Pedestrian', ...
-        self.cls_id = self.cls_type_to_id(self.type)
-        self.truncation = data[1] # truncated pixel ratio [0..1]
-        self.occlusion = int(data[2]) # 0=visible, 1=partly occluded, 2=fully occluded, 3=unknown
-        self.alpha = data[3] # object observation angle [-pi..pi]
-
-        # extract 2d bounding box in 0-based coordinates
-        self.xmin = data[4] # left
-        self.ymin = data[5] # top
-        self.xmax = data[6] # right
-        self.ymax = data[7] # bottom
-        self.box2d = np.array([self.xmin,self.ymin,self.xmax,self.ymax])
-        
-        # extract 3d bounding box information
-        self.h = data[8] # box height
-        self.w = data[9] # box width
-        self.l = data[10] # box length (in meters)
-        self.t = (data[11],data[12],data[13]) # location (x,y,z) in camera coord.
-        self.dis_to_cam = np.linalg.norm(self.t)
-        self.ry = data[14] # yaw angle (around Y-axis in camera coordinates) [-pi..pi]
-        self.score = data[15] if data.__len__() == 16 else -1.0
-        self.level_str = None
-        self.level = self.get_obj_level()
+    def __init__(self, label=-1):
     
-    @classmethod
-    def loadParameters(self,label=-1):
         if(label == -1):
             label = self.defaultParameters()
 
@@ -66,11 +38,11 @@ class Object3d(object):
         self.score =label['score'] if label.__len__() == 16 else -1.0
         self.level_str = None
         self.level = self.get_obj_level()
-        return(self)
+        
 
     @classmethod
     def defaultParameters(cls):
-        '''Return a label structure with all the required fileds for label file with default values (0) '''
+        '''Returns a label structure with all the required fileds for label file with default values (0) '''
 
         label = {
             'type':         "",
@@ -94,15 +66,16 @@ class Object3d(object):
         }
         return(label)
     
-    def loadBox3D(self,bb):
+    def loadBox3D(self,objtype,h,w,l,t,rz,score):
         
-        self.type = bb['type'] # 'Car', 'Pedestrian', ...
+        self.type = objtype # 'Car', 'Pedestrian', ...
          # extract 3d bounding box information
-        self.h = bb['h'] # box height
-        self.w = bb['w'] # box width
-        self.l = bb['l'] # box length (in meters)
-        self.t = bb['t'] # location (x,y,z) in camera coord.
-        self.score = bb['score']
+        self.h = h # box height
+        self.w = w # box width
+        self.l = l # box length (in meters)
+        self.t = t # location (x,y,z) in camera coord.
+        self.ry = rz
+        self.score = score
 
     def cls_type_to_id(self, cls_type):
         # Car and Van ==> Car class
@@ -368,12 +341,12 @@ def write_label(objs,label_filename):
         :param list of Object3D class 
         :param full name of the label file (with path) 
     '''
-    with open(label_filename, "w") as f: 
+    with open(label_filename, "a") as f: 
 
         for obj in objs:
 
             frame = obj.to_kitti_format() # conv to kitti file format
-            f.write(frame + os.linesep)
+            f.write(frame+'\n')
 
 def load_image(img_filename):
     return cv2.imread(img_filename)
