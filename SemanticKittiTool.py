@@ -394,11 +394,16 @@ class SemanticKittiTool:
         t[2] = 0 # object frame is mass center in the ground surface (as described kitti paper)
         pts = points.T - t
 
+        # rotation 
+        # ....
+        rz = R.from_euler('z', 0, degrees=False) 
+
+        # get 3D bounding box bounderies 
         x = pts[0,:]
         y = pts[1,:]
         z = pts[2,:]
 
-
+        
         xminbound = float(min(x))
         xmaxbound = float(max(x))
         yminbound = float(min(y))
@@ -406,33 +411,19 @@ class SemanticKittiTool:
         zminbound = float(min(z))
         zmaxbound = float(max(z))
 
-        p = list()
-        p.append(np.array([xminbound, yminbound, zminbound]))
-        p.append(np.array([xmaxbound, yminbound, zminbound]))
-        p.append(np.array([xmaxbound, yminbound, zmaxbound]))
-        p.append(np.array([xminbound, yminbound, zmaxbound]))
-        p.append(np.array([xminbound, ymaxbound, zmaxbound]))
-        p.append(np.array([xmaxbound, ymaxbound, zmaxbound]))
-        p.append(np.array([xmaxbound, ymaxbound, zminbound]))
-        p.append(np.array([xminbound, ymaxbound, zminbound]))
-
-        bbox = np.array([])
-        for vert in p:
-            corner = vert.reshape(3,1) + t
-            if len(bbox) == 0:
-                bbox = corner.T
-            else:
-                bbox = np.concatenate((bbox,corner.T))
-        
-        r = R.from_euler('z', 0, degrees=True)
-        Rot = r.as_matrix()
-
-        R_rect = ('ry',Rot)
-        origin = ('t', t)
-
-        bbox_pts = ('vertices', bbox)
-
-        return(dict([orig,R_rect,bbox_pts]))
+        height = np.abs(zmaxbound - zminbound) # height is z axis
+        length = np.abs(xmaxbound - xminbound) # length
+        width = np.abs(ymaxbound - yminbound)  # width
+    
+        #Rot = r.as_matrix()
+        obj = {
+            't': t,
+            'rz':rz,
+            'h': height,
+            'w': width,
+            'l': length
+        }
+        return(obj)
 
     def CreateTransf(self,R,T):
         row = np.zeros((1,3),dtype=int)
