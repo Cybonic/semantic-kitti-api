@@ -373,7 +373,7 @@ class SemanticKittiTool:
         #ax.set_xlabel("X")
         #ax.set_ylabel("Y")
         #plt.show()
-        
+        rz = R.from_euler('z', 0, degrees=False)
 
         R_rect = ('R_rect',Rot)
         #input("Press [enter] to continue.")
@@ -396,7 +396,7 @@ class SemanticKittiTool:
 
         # rotation 
         # ....
-        rz = R.from_euler('z', 0, degrees=False) 
+        rz = 0
 
         # get 3D bounding box bounderies 
         x = pts[0,:]
