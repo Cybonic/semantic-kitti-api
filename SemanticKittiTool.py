@@ -304,7 +304,10 @@ class SemanticKittiTool:
         zminbound = float(min(z))
         zmaxbound = float(max(z))
 
-        height = np.abs(zmaxbound - zminbound) # height is z axis
+        # height = np.abs(zmaxbound - zminbound) # height is z axis
+        # Since object frame is located at the ground the heigth of the object 
+        # is considered to be z
+        height = np.abs(zmaxbound) # height is z axis 
         length = np.abs(xmaxbound - xminbound) # length
         width = np.abs(ymaxbound - yminbound)  # width
     
