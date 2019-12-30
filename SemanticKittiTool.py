@@ -18,6 +18,8 @@ import vispy
 from vispy.scene import visuals, SceneCanvas
 from vispy.plot import Fig
 
+clear = lambda: os.system('cls')
+
 
 class SemanticKittiTool:
     """ Class that creates and handles point cloud data for other application"""
@@ -67,6 +69,39 @@ class SemanticKittiTool:
         for value in  objectlabels[0]:
             key.append(self.getKeysByValue(convlabel, value))
         return key
+    def itrScanPointer(self):
+        self.offset = self.offset+1
+
+    def ComputeAll3DBoundingBoxes(self):
+        
+        num_of_scans = self.scan_names.__len__()
+        for i in range(0,num_of_scans):
+            self.offset = i
+            
+            self.scan.reset()
+            self.scan.open_scan(self.scan_names[self.offset])
+            self.scan.open_label(self.label_names[self.offset])
+            
+            self.scan_labels = self.scan.sem_label
+            self.scan_pts = self.scan.points
+
+            # MergeColorFlag=1 - Merge all colors of all objects in same color frame
+            # MergeColorFlag=0 - Create a color frame for each object
+            bboxes,_ = self.Create3DBoundingBoxes(self.scan_pts,self.scan_labels,MergeColorFlag=1)
+            
+            
+            self.Save3DBoundingBox(bboxes,i)
+
+            clear()
+            
+            percentage = (i/num_of_scans)*100
+            dots = int(percentage) 
+            space = 100 - dots
+            print( "*" * 102 )
+            print("|" + "*" * dots + " " *space  + "|")
+            print("Converted %3d"% percentage)
+            print("Scan: %1d.txt" % i)
+            print( "*" * 102 )
 
     def CreateAll3DBoundingBoxes(self):
 
@@ -82,9 +117,9 @@ class SemanticKittiTool:
         # MergeColorFlag=0 - Create a color frame for each object
         bboxes,scan_color_all_obj = self.Create3DBoundingBoxes(self.scan_pts,self.scan_labels,MergeColorFlag=1)
         
-        file_name = str(self.offset) + ".txt"
-       
-        self.Save3DBoundingBox(bboxes,file_name)
+        
+        scan_number = self.offset
+        self.Save3DBoundingBox(bboxes,scan_number)
 
         # Plot objects & bounding boxes
         #shape = len(list(scan_color_all_obj))
@@ -106,7 +141,7 @@ class SemanticKittiTool:
         self.PlotPcl(self.scan_pts)
             
         #self.SaveBoundingBoxes(boundingboxes)
-    def Save3DBoundingBox(self,bboxes,filename):
+    def Save3DBoundingBox(self,bboxes,scannumb,plotflag=0):
 
         label_path = os.path.join(self._bbox_path,"labels_2")
 
@@ -118,19 +153,46 @@ class SemanticKittiTool:
                 os.makedirs(label_path,access_rights)
                 true_label_path = label_path
             except OSError:
-                print ("Creation of the directory %s failed" % label_path)
+                print ("Failed to create directory %s" % label_path)
             else:
-                print ("Successfully created the directory %s " % label_path)
+                print ("Successfully created directory %s " % label_path)
 
-        file_path = os.path.join(true_label_path,filename) # full file path
+        file_name = str(scannumb) + ".txt"
 
-        for bbox in bboxes.items():
+        file_path = os.path.join(true_label_path,file_name) # full file path
 
-            kitti_labels = self.conv_to_kitti_format(bbox)
-            kitti.write_label(kitti_labels,file_path)
+        # Convert to kitti standard
+        for object3D in bboxes.items():    
+            self.WriteLabel(object3D,file_path)    
+            if(plotflag):
+                print(" Saved frame (scan " + str(scannumb) +"):" + kitti_str_frame )
 
+    def WriteLabel(self,object,filepath):
+        objecttype = object[0] # Object class
+        for bbox in object[1]: 
+            # all bouning boxes of the object class
+            # convert object by object
+            obj = (objecttype,bbox)
+            kitti_str_frame = self.conv_to_kitti_format(obj)
+            kitti.write_label(kitti_str_frame,filepath,'a')
 
     def conv_to_kitti_format(self,bbox):
+
+        label = kitti.Object3d()
+        
+        objtype = bbox[0]
+        w = bbox[1]['w']
+        h = bbox[1]['h']
+        l = bbox[1]['l']
+        rz = bbox[1]['rz']
+        t = bbox[1]['t']
+        score = 1
+
+        label.loadBox3D(objtype,h,w,l,t,rz,score)
+        str_frame = label.to_kitti_format()
+        return(str_frame)
+
+    def conv_to_kitti_format2(self,bbox):
 
         label = kitti.Object3d()
         labels = []

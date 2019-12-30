@@ -336,17 +336,13 @@ def read_label(label_filename):
     objects = [Object3d(line) for line in lines]
     return objects
 
-def write_label(objs,label_filename):
+def write_label(frame,label_filename,write_prop='w'):
     ''' write object information (type, bbox, ...) in kitti format to a file 
         :param list of Object3D class 
         :param full name of the label file (with path) 
     '''
-    with open(label_filename, "a") as f: 
-
-        for obj in objs:
-
-            frame = obj.to_kitti_format() # conv to kitti file format
-            f.write(frame+'\n')
+    with open(label_filename, write_prop) as f: 
+        f.write(frame+'\n')
 
 def load_image(img_filename):
     return cv2.imread(img_filename)

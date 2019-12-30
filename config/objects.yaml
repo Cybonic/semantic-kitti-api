@@ -1,0 +1,9 @@
+# categories.yaml file
+
+objects:
+  - "car"
+  - "trunk"
+  - "pole"
+  - "traffic-sign"
+  #- "other-object"
+  
