@@ -165,7 +165,7 @@ class SemanticKittiTool:
         for object3D in bboxes.items():    
             self.WriteLabel(object3D,file_path)    
             if(plotflag):
-                print(" Saved frame (scan " + str(scannumb) +"):" + kitti_str_frame )
+                print(" Saved frame (scan " + str(scannumb) )
 
     def WriteLabel(self,object,filepath):
         objecttype = object[0] # Object class
