@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+from os.path import isfile, join
 import numpy as np
 import yaml
 import math
@@ -70,6 +71,49 @@ class SemanticKittiTool:
             key.append(self.getKeysByValue(convlabel, value))
         return key
 
+    def LoadObjectClass(self,path):
+        num_of_scans = self.scan_names.__len__()
+
+        files = [os.path.join(dp, f) for dp, dn, fn in os.walk(
+           os.path.expanduser(path)) for f in fn]
+        files.sort()
+        
+        # check if indice files is equal to the scan files
+        assert(len(files) == len(self.scan_names))
+        
+        dataset_pts = []
+        for i in range(0,num_of_scans):
+            self.scan.reset()
+            self.offset = i 
+            self.scan.open_scan(self.scan_names[self.offset])
+            self.scan_pts = self.scan.points
+
+            scan_object = files[i]
+            obj_list = self.LoadFile(scan_object)
+            obj_scan_pts  = self.GetObjectPoints(obj_list,self.scan_pts)
+            dataset_pts.append(obj_scan_pts)
+            plotProgression(i,num_of_scans)
+        return(dataset_pts)
+
+    def GetObjectPoints(self,objs,scan):
+
+        obj_pts = dict()
+        for label,idx in objs.items():
+            object_pts = scan[idx]
+            obj_pts.update({label:object_pts})
+        return(obj_pts)
+
+
+    def LoadFile(self,file_path):
+        obj_list = dict()
+        for line in open(file_path):
+            line =  line.split(' ')
+            idx = np.array([int(value) for value in line[1:]])
+            obj = dict({line[0]:idx})
+            obj_list.update(obj)
+        return(obj_list)
+        
+
     def SplitObjectClass(self,path):
 
         num_of_scans = self.scan_names.__len__()
@@ -84,7 +128,8 @@ class SemanticKittiTool:
             
             object_segment_idx = self.SplitIntoObjectSegments(self.scan_labels)
             
-            file_name = str(i) + ".txt"
+            
+            file_name = '{0:04d}.txt'.format(i)
             file_path = os.path.join(path,file_name)
 
             with open(file_path, 'w') as f: 
