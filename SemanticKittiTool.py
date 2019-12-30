@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+from os.path import isfile, join
 import numpy as np
 import yaml
 import math
@@ -69,8 +70,78 @@ class SemanticKittiTool:
         for value in  objectlabels[0]:
             key.append(self.getKeysByValue(convlabel, value))
         return key
-    def itrScanPointer(self):
-        self.offset = self.offset+1
+
+    def LoadObjectClass(self,path):
+        num_of_scans = self.scan_names.__len__()
+
+        files = [os.path.join(dp, f) for dp, dn, fn in os.walk(
+           os.path.expanduser(path)) for f in fn]
+        files.sort()
+        
+        # check if indice files is equal to the scan files
+        assert(len(files) == len(self.scan_names))
+        
+        dataset_pts = []
+        for i in range(0,num_of_scans):
+            self.scan.reset()
+            self.offset = i 
+            self.scan.open_scan(self.scan_names[self.offset])
+            self.scan_pts = self.scan.points
+
+            scan_object = files[i]
+            obj_list = self.LoadFile(scan_object)
+            obj_scan_pts  = self.GetObjectPoints(obj_list,self.scan_pts)
+            dataset_pts.append(obj_scan_pts)
+            plotProgression(i,num_of_scans)
+        return(dataset_pts)
+
+    def GetObjectPoints(self,objs,scan):
+
+        obj_pts = dict()
+        for label,idx in objs.items():
+            object_pts = scan[idx]
+            obj_pts.update({label:object_pts})
+        return(obj_pts)
+
+
+    def LoadFile(self,file_path):
+        obj_list = dict()
+        for line in open(file_path):
+            line =  line.split(' ')
+            idx = np.array([int(value) for value in line[1:]])
+            obj = dict({line[0]:idx})
+            obj_list.update(obj)
+        return(obj_list)
+        
+
+    def SplitObjectClass(self,path):
+
+        num_of_scans = self.scan_names.__len__()
+        for i in range(0,num_of_scans):
+            self.scan.reset()
+            self.offset = i 
+            self.scan.open_scan(self.scan_names[self.offset])
+            self.scan.open_label(self.label_names[self.offset])
+            
+            self.scan_labels = self.scan.sem_label
+            self.scan_pts = self.scan.points
+            
+            object_segment_idx = self.SplitIntoObjectSegments(self.scan_labels)
+            
+            
+            file_name = '{0:04d}.txt'.format(i)
+            file_path = os.path.join(path,file_name)
+
+            with open(file_path, 'w') as f: 
+                for obj in object_segment_idx.items():
+                    
+                    frame= obj[0] + " " + " ".join(map(str,obj[1]))                    
+                    f.write(frame+'\n')
+            
+            plotProgression(i,num_of_scans)
+
+
+    #def SaveclassObjects(self,file_path,objectidx):
 
     def ComputeAll3DBoundingBoxes(self):
         
@@ -92,16 +163,12 @@ class SemanticKittiTool:
             
             self.Save3DBoundingBox(bboxes,i)
 
-            clear()
+            plotProgression(i,num_of_scans)
             
-            percentage = (i/num_of_scans)*100
-            dots = int(percentage) 
-            space = 100 - dots
-            print( "*" * 102 )
-            print("|" + "*" * dots + " " *space  + "|")
-            print("Converted %3d"% percentage)
-            print("Scan: %1d.txt" % i)
-            print( "*" * 102 )
+
+
+    
+
 
     def CreateAll3DBoundingBoxes(self):
 
@@ -192,21 +259,6 @@ class SemanticKittiTool:
         str_frame = label.to_kitti_format()
         return(str_frame)
 
-    def conv_to_kitti_format2(self,bbox):
-
-        label = kitti.Object3d()
-        labels = []
-        for obj in bbox[1]:
-            objtype = bbox[0]
-            w = obj['w']
-            h = obj['h']
-            l = obj['l']
-            rz = obj['rz']
-            t = obj['t']
-            score = 1
-            label.loadBox3D(objtype,h,w,l,t,rz,score)
-            labels.append(label)
-        return(labels)
 
     def Color3DBoundingBox(self,bboxes,colorframe = []):
 
@@ -558,3 +610,17 @@ class SemanticKittiTool:
 
     def run(self):
         vispy.app.run()
+
+def plotProgression(i,total):
+
+
+    percentage = (i/total)*100
+    dots = int(percentage) 
+    space = 100 - dots
+
+    clear()
+    print( "*" * 102 )
+    print("|" + "*" * dots + " " *space  + "|")
+    print("Converted %3d"% percentage)
+    print("Scan: %1d.txt" % i)
+    print( "*" * 102 )
