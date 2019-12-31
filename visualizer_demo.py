@@ -38,7 +38,7 @@ if __name__ == '__main__':
       '--obj', '-o',
       type=str,
       required=False,
-      default ="objects.yaml",
+      default ="config/objects.yaml",
       help='Dataset objects to detect. Defaults to %(default)s',
   )
   parser.add_argument(
