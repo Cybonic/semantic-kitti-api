@@ -142,8 +142,6 @@ class SemanticKittiTool:
             plotProgression("SplitObjectClass",i,num_of_scans)
 
 
-    #def SaveclassObjects(self,file_path,objectidx):
-
     def ComputeAll3DBoundingBoxes(self,path):
 
         self._bbox_path = path

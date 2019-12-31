@@ -4,26 +4,42 @@
 import argparse
 import os
 import yaml
+import sys
+
+
+from SemanticKittiTool import SemanticKittiTool
 from auxiliary.laserscan import LaserScan, SemLaserScan
 from auxiliary.laserscanvis import LaserScanVis
 
+
 DATASET_PATH = "E:\\DATASETS\\Kitti\\odometry_semantic_dataset"
 
+
+def getCurrentPath(filename):
+        return os.path.dirname(os.path.abspath(__file__)) + '/' + filename
+
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser("./visualize.py")
+  parser = argparse.ArgumentParser("./visualizer_demo.py")
   parser.add_argument(
       '--dataset', '-d',
       type=str,
-      default = DATASET_PATH,
       required=False,
-      help='Dataset to visualize. No Default',
+      default=DATASET_PATH,
+      help='Dataset to visualize. Defaults to %(default)s',
   )
   parser.add_argument(
       '--config', '-c',
       type=str,
       required=False,
-      default="config/semantic-kitti.yaml",
+      default= "config/semantic-kitti.yaml",
       help='Dataset config file. Defaults to %(default)s',
+  )
+  parser.add_argument(
+      '--obj', '-o',
+      type=str,
+      required=False,
+      default ="config/objects.yaml",
+      help='Dataset objects to detect. Defaults to %(default)s',
   )
   parser.add_argument(
       '--sequence', '-s',
@@ -31,16 +47,6 @@ if __name__ == '__main__':
       default="00",
       required=False,
       help='Sequence to visualize. Defaults to %(default)s',
-  )
-  parser.add_argument(
-      '--predictions', '-p',
-      type=str,
-      default=None,
-      required=False,
-      help='Alternate location for labels, to use predictions folder. '
-      'Must point to directory containing the predictions in the proper format '
-      ' (see readme)'
-      'Defaults to %(default)s',
   )
   parser.add_argument(
       '--ignore_semantics', '-i',
@@ -81,8 +87,8 @@ if __name__ == '__main__':
   print("INTERFACE:")
   print("Dataset", FLAGS.dataset)
   print("Config", FLAGS.config)
+  print("Objs", FLAGS.obj)
   print("Sequence", FLAGS.sequence)
-  print("Predictions", FLAGS.predictions)
   print("ignore_semantics", FLAGS.ignore_semantics)
   print("do_instances", FLAGS.do_instances)
   print("ignore_safety", FLAGS.ignore_safety)
@@ -110,6 +116,7 @@ if __name__ == '__main__':
     print("Sequence folder doesn't exist! Exiting...")
     quit()
 
+  # E:\DATASETS\Kitti\odometry_semantic_dataset\sequences\00\velodyne
   # populate the pointclouds
   scan_names = [os.path.join(dp, f) for dp, dn, fn in os.walk(
       os.path.expanduser(scan_paths)) for f in fn]
@@ -117,11 +124,8 @@ if __name__ == '__main__':
 
   # does sequence folder exist?
   if not FLAGS.ignore_semantics:
-    if FLAGS.predictions is not None:
-      label_paths = os.path.join(FLAGS.predictions, "sequences",
-                                 FLAGS.sequence, "predictions")
-    else:
-      label_paths = os.path.join(FLAGS.dataset, "sequences",
+   
+    label_paths = os.path.join(FLAGS.dataset, "sequences",
                                  FLAGS.sequence, "labels")
     if os.path.isdir(label_paths):
       print("Labels folder exists! Using labels from %s" % label_paths)
@@ -137,6 +141,23 @@ if __name__ == '__main__':
     if not FLAGS.ignore_safety:
       assert(len(label_names) == len(scan_names))
 
+  # check if bbounding box directory exist
+
+  labels_2_path = os.path.join(DATASET_PATH,"sequences",FLAGS.sequence,"labels_2")
+ 
+  if os.path.isdir(labels_2_path):
+    print("Labels 2 folder exists! Using labels from %s" % labels_2_path)
+  else:
+    try:
+        os.makedirs(labels_2_path, 0x755)
+    except OSError:
+        
+        print ("Creating directory %s failed" % labels_2_path)
+    else:
+        print ("Successfully created directory %s " % labels_2_path)
+
+
+
   # create a scan
   if FLAGS.ignore_semantics:
     scan = LaserScan(project=True)  # project all opened scans to spheric proj
@@ -150,20 +171,26 @@ if __name__ == '__main__':
   instances = FLAGS.do_instances
   if not semantics:
     label_names = None
-  vis = LaserScanVis(scan=scan,
-                     scan_names=scan_names,
-                     label_names=label_names,
-                     offset=FLAGS.offset,
-                     semantics=semantics, 
-                     instances=instances and semantics,
-                     objs_of_interest="config/objects.yaml",
-                     config =FLAGS.config)
 
+  KITTItool = SemanticKittiTool(scan=scan, 
+                                scan_names=scan_names,
+                                label_names=label_names,
+                                offset=FLAGS.offset,
+                                config=FLAGS.config,
+                                obj = getCurrentPath(FLAGS.obj),
+                                semantics=semantics, instances=instances and semantics)
+ 
+
+
+  
+  #KITTItool.CreateAll3DBoundingBoxes(objectsOfInterrest)
+                      
   # print instructions
   print("To navigate:")
   print("\tb: back (previous scan)")
   print("\tn: next (next scan)")
   print("\tq: quit (exit program)")
 
-  # run the visualizer
-  vis.run()
+  KITTItool.run()
+ 
+  #vis.run()
