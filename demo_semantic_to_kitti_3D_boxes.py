@@ -172,7 +172,6 @@ if __name__ == '__main__':
                                 label_names=label_names,
                                 offset=FLAGS.offset,
                                 config=FLAGS.config,
-                                bbox_path = label2_path,
                                 obj = FLAGS.obj)
 
 
