@@ -75,6 +75,10 @@ if __name__ == '__main__':
 
     for seq in sequance_names[1:]:
 
+        # Plot Sequence information
+        print("*" * 102)
+        print("Sequence: %3.0d"%int(seq))
+
         ## Point cloud
         # does sequence folder exist?
         scan_paths = os.path.join(FLAGS.dataset, "sequences",seq, "velodyne")
@@ -151,5 +155,9 @@ if __name__ == '__main__':
                                 obj = FLAGS.obj)
 
         KITTItool.ComputeAll3DBoundingBoxes(label_2_paths)
-
         KITTItool.SplitObjectClass(object_class_path)
+
+        # Final Printing
+        
+        print("Sequence: %3.0d complete!"%int(seq))
+        print("*" * 102)
