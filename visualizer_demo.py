@@ -12,7 +12,7 @@ from auxiliary.laserscan import LaserScan, SemLaserScan
 from auxiliary.laserscanvis import LaserScanVis
 
 
-DATASET_PATH = "E:\\DATASETS\\Kitti\\odometry_dataset_semantic\\"
+DATASET_PATH = "E:\\DATASETS\\Kitti\\odometry_semantic_dataset"
 
 
 def getCurrentPath(filename):
@@ -116,6 +116,7 @@ if __name__ == '__main__':
     print("Sequence folder doesn't exist! Exiting...")
     quit()
 
+  # E:\DATASETS\Kitti\odometry_semantic_dataset\sequences\00\velodyne
   # populate the pointclouds
   scan_names = [os.path.join(dp, f) for dp, dn, fn in os.walk(
       os.path.expanduser(scan_paths)) for f in fn]
@@ -142,18 +143,18 @@ if __name__ == '__main__':
 
   # check if bbounding box directory exist
 
-  label_2_path = os.path.join(DATASET_PATH,"sequences",FLAGS.sequence)
+  labels_2_path = os.path.join(DATASET_PATH,"sequences",FLAGS.sequence,"labels_2")
  
-  if os.path.isdir(label_2_paths):
-    print("Labels 2 folder exists! Using labels from %s" % label_2_paths)
+  if os.path.isdir(labels_2_path):
+    print("Labels 2 folder exists! Using labels from %s" % labels_2_path)
   else:
     try:
-        os.makedirs(label_2_paths, 0x755)
+        os.makedirs(labels_2_path, 0x755)
     except OSError:
         
-        print ("Creating directory %s failed" % label_2_paths)
+        print ("Creating directory %s failed" % labels_2_path)
     else:
-        print ("Successfully created directory %s " % label_2_paths)
+        print ("Successfully created directory %s " % labels_2_path)
 
 
 
@@ -176,7 +177,6 @@ if __name__ == '__main__':
                                 label_names=label_names,
                                 offset=FLAGS.offset,
                                 config=FLAGS.config,
-                                bbox_path = bboxpath,
                                 obj = getCurrentPath(FLAGS.obj),
                                 semantics=semantics, instances=instances and semantics)
  
