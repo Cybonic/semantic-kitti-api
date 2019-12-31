@@ -6,13 +6,15 @@ from vispy.scene import visuals, SceneCanvas
 import numpy as np
 from matplotlib import pyplot as plt
 from auxiliary.laserscan import LaserScan, SemLaserScan
-
+import os 
+import yaml
 
 class LaserScanVis:
   """Class that creates and handles a visualizer for a pointcloud"""
 
   def __init__(self, scan, scan_names, label_names, offset=0,
-               semantics=True, instances=False):
+               semantics=True, instances=False,objs_of_interest = "",config =""):
+    
     self.scan = scan
     self.scan_names = scan_names
     self.label_names = label_names
@@ -20,10 +22,21 @@ class LaserScanVis:
     self.total = len(self.scan_names)
     self.semantics = semantics
     self.instances = instances
+    if os.path.exists(config) and os.path.exists(objs_of_interest):
+      self.config = config
+      objects = yaml.load(open(objs_of_interest))
+      self._labels_of_interest_name = objects['objects']
+      self._labels_of_interest_num = self.GetLabelIdx(self._labels_of_interest_name)
+      self.FLAG_objs_of_interest = 1
+      
+    else:
+      self.FLAG_objs_of_interest =0
+
     # sanity check
     if not self.semantics and self.instances:
       print("Instances are only allowed in when semantics=True")
       raise ValueError
+    
 
     self.reset()
     self.update_scan()
@@ -127,10 +140,17 @@ class LaserScanVis:
 
   def update_scan(self):
     # first open data
+
     self.scan.open_scan(self.scan_names[self.offset])
     if self.semantics:
       self.scan.open_label(self.label_names[self.offset])
       self.scan.colorize()
+      ## Change made here
+      if self.FLAG_objs_of_interest:
+        # load file 
+        self.ColorizeObjectOfInterest()
+      ##
+      
 
     # then change names
     title = "scan " + str(self.offset)
@@ -223,3 +243,38 @@ class LaserScanVis:
 
   def run(self):
     vispy.app.run()
+
+  def GetLabelIdx(self,objects):
+
+    config = yaml.load(open(self.config))
+    convlabel = config['labels']
+    objectlabels = objects
+    key = []
+    for value in  objectlabels:
+        key.append(self.getKeysByValue(convlabel, value))
+    return key
+
+  def ColorizeObjectOfInterest(self):
+    """ Colorize pointcloud with the color of each semantic label
+    """
+    shapescan = self.scan.sem_label.shape
+    sem_label = self.scan.sem_label
+    labels_of_interest_num = self._labels_of_interest_num
+    #instlabel = self.scan_labels['inst']
+    new_scan_labels = np.zeros(shapescan[0],dtype=int)
+
+    for labelnum in labels_of_interest_num:
+        idx = np.where(sem_label == labelnum)[0]
+        new_scan_labels[idx] = labelnum
+
+    self.scan.inst_label_color = self.scan.inst_color_lut[new_scan_labels]
+    self.scan.inst_label_color = self.scan.inst_label_color.reshape((-1, 3))
+  
+  def getKeysByValue(self,dictOfElements, valueToFind):
+
+        listOfKeys = []
+        listOfItems = dictOfElements.items()
+        for item  in listOfItems:
+            if item[1] == valueToFind:
+                listOfKeys = item[0]
+        return  listOfKeys
