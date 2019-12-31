@@ -39,7 +39,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--sequence', '-s',
       type=str,
-      default="00",
+      default="01",
       required=False,
       help='Sequence to visualize. Defaults to %(default)s',
   )
@@ -177,4 +177,4 @@ if __name__ == '__main__':
 
 
     
-KITTItool.ComputeAll3DBoundingBoxes()
+KITTItool.ComputeAll3DBoundingBoxes(label2_path)
