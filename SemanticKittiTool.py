@@ -207,7 +207,7 @@ class SemanticKittiTool:
         #self.SaveBoundingBoxes(boundingboxes)
     def Save3DBoundingBox(self,bboxes,scannumb,plotflag=0):
 
-        label_path = os.path.join(self._bbox_path,"labels_2")
+        label_path = self._bbox_path
 
         if os.path.isdir(label_path):
             true_label_path = label_path
@@ -619,6 +619,8 @@ def plotProgression(funcname,i,total):
     print(" ++++ "+ funcname + " ++++ ")
     print( "-" * 102 )
     print("|" + "|" * dots + " " *space  + "|")
-    print("Converted %3d"% percentage)
+    print( "-" * 102 )
+    print("Converted %3d %%"% percentage)
     print("Scan: %1d.txt" % i)
-    print( "*" * 102 )
+    
+    
