@@ -138,7 +138,8 @@ class SemanticKittiTool:
                     frame= obj[0] + " " + " ".join(map(str,obj[1]))                    
                     f.write(frame+'\n')
             
-            plotProgression(i,num_of_scans)
+         
+            plotProgression("SplitObjectClass",i,num_of_scans)
 
 
     #def SaveclassObjects(self,file_path,objectidx):
@@ -164,13 +165,8 @@ class SemanticKittiTool:
             
             self.Save3DBoundingBox(bboxes,i)
 
-            plotProgression(i,num_of_scans)
+            plotProgression("ComputeAll3DBoundingBoxes",i,num_of_scans)
             
-
-
-    
-
-
     def CreateAll3DBoundingBoxes(self):
 
         self.scan.reset()
@@ -612,7 +608,7 @@ class SemanticKittiTool:
     def run(self):
         vispy.app.run()
 
-def plotProgression(i,total):
+def plotProgression(funcname,i,total):
 
 
     percentage = (i/total)*100
@@ -620,6 +616,7 @@ def plotProgression(i,total):
     space = 100 - dots
 
     clear()
+    print(" ++++ "+ funcname + " ++++ ")
     print( "*" * 102 )
     print("|" + "*" * dots + " " *space  + "|")
     print("Converted %3d"% percentage)
