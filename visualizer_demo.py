@@ -123,11 +123,8 @@ if __name__ == '__main__':
 
   # does sequence folder exist?
   if not FLAGS.ignore_semantics:
-    if FLAGS.predictions is not None:
-      label_paths = os.path.join(FLAGS.predictions, "sequences",
-                                 FLAGS.sequence, "predictions")
-    else:
-      label_paths = os.path.join(FLAGS.dataset, "sequences",
+   
+    label_paths = os.path.join(FLAGS.dataset, "sequences",
                                  FLAGS.sequence, "labels")
     if os.path.isdir(label_paths):
       print("Labels folder exists! Using labels from %s" % label_paths)
@@ -145,19 +142,18 @@ if __name__ == '__main__':
 
   # check if bbounding box directory exist
 
-  bbox_path = os.path.join(DATASET_PATH,"sequences",FLAGS.sequence)
+  label_2_path = os.path.join(DATASET_PATH,"sequences",FLAGS.sequence)
  
-  if os.path.isdir(bbox_path):
-    bboxpath = bbox_path
+  if os.path.isdir(label_2_paths):
+    print("Labels 2 folder exists! Using labels from %s" % label_2_paths)
   else:
     try:
-      access_rights = 0x755
-      os.makedirs(bbox_path,access_rights)
-      bboxpath = bbox_path
+        os.makedirs(label_2_paths, 0x755)
     except OSError:
-      print ("Creation of the directory %s failed" % bbox_path)
+        
+        print ("Creating directory %s failed" % label_2_paths)
     else:
-      print ("Successfully created the directory %s " % bbox_path)
+        print ("Successfully created directory %s " % label_2_paths)
 
 
 
@@ -168,9 +164,6 @@ if __name__ == '__main__':
     color_dict = CFG["color_map"]
     nclasses = len(color_dict)
     scan = SemLaserScan(nclasses, color_dict, project=True)
-
-
-  #
 
   # create a visualizer
   semantics = not FLAGS.ignore_semantics
