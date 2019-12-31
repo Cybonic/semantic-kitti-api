@@ -617,8 +617,8 @@ def plotProgression(funcname,i,total):
 
     clear()
     print(" ++++ "+ funcname + " ++++ ")
-    print( "*" * 102 )
-    print("|" + "*" * dots + " " *space  + "|")
+    print( "-" * 102 )
+    print("|" + "|" * dots + " " *space  + "|")
     print("Converted %3d"% percentage)
     print("Scan: %1d.txt" % i)
     print( "*" * 102 )
