@@ -25,7 +25,7 @@ clear = lambda: os.system('cls')
 class SemanticKittiTool:
     """ Class that creates and handles point cloud data for other application"""
 
-    def __init__(self, scan, scan_names, label_names,config,  bbox_path, obj, offset=0,
+    def __init__(self, scan, scan_names, label_names,config, obj, offset=0,
                  semantics=True, instances=False):
         self.scan = scan
         self.scan_names = scan_names
@@ -38,7 +38,7 @@ class SemanticKittiTool:
         self._labels_of_interest_name = yaml.load(open(obj))
         self._labels_of_interest_num = self.GetLabelIdx(self._labels_of_interest_name)
         self.sizepoints = 1
-        self._bbox_path = bbox_path # path where bounding boxes will be stored
+        #self._bbox_path = bbox_path # path where bounding boxes will be stored
 
         self._scan_labels = dict([('inst',[]),('sem',[])])
          # make instance colors
@@ -138,13 +138,15 @@ class SemanticKittiTool:
                     frame= obj[0] + " " + " ".join(map(str,obj[1]))                    
                     f.write(frame+'\n')
             
-            plotProgression(i,num_of_scans)
+         
+            plotProgression("SplitObjectClass",i,num_of_scans)
 
 
     #def SaveclassObjects(self,file_path,objectidx):
 
-    def ComputeAll3DBoundingBoxes(self):
-        
+    def ComputeAll3DBoundingBoxes(self,path):
+
+        self._bbox_path = path
         num_of_scans = self.scan_names.__len__()
         for i in range(0,num_of_scans):
             self.offset = i
@@ -163,13 +165,8 @@ class SemanticKittiTool:
             
             self.Save3DBoundingBox(bboxes,i)
 
-            plotProgression(i,num_of_scans)
+            plotProgression("ComputeAll3DBoundingBoxes",i,num_of_scans)
             
-
-
-    
-
-
     def CreateAll3DBoundingBoxes(self):
 
         self.scan.reset()
@@ -210,7 +207,7 @@ class SemanticKittiTool:
         #self.SaveBoundingBoxes(boundingboxes)
     def Save3DBoundingBox(self,bboxes,scannumb,plotflag=0):
 
-        label_path = os.path.join(self._bbox_path,"labels_2")
+        label_path = self._bbox_path
 
         if os.path.isdir(label_path):
             true_label_path = label_path
@@ -611,7 +608,7 @@ class SemanticKittiTool:
     def run(self):
         vispy.app.run()
 
-def plotProgression(i,total):
+def plotProgression(funcname,i,total):
 
 
     percentage = (i/total)*100
@@ -619,8 +616,11 @@ def plotProgression(i,total):
     space = 100 - dots
 
     clear()
-    print( "*" * 102 )
-    print("|" + "*" * dots + " " *space  + "|")
-    print("Converted %3d"% percentage)
+    print(" ++++ "+ funcname + " ++++ ")
+    print( "-" * 102 )
+    print("|" + "|" * dots + " " *space  + "|")
+    print( "-" * 102 )
+    print("Converted %3d %%"% percentage)
     print("Scan: %1d.txt" % i)
-    print( "*" * 102 )
+    
+    
