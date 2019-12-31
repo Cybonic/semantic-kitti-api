@@ -7,12 +7,15 @@ import yaml
 from auxiliary.laserscan import LaserScan, SemLaserScan
 from auxiliary.laserscanvis import LaserScanVis
 
+DATASET_PATH = "E:\\DATASETS\\Kitti\\odometry_semantic_dataset"
+
 if __name__ == '__main__':
   parser = argparse.ArgumentParser("./visualize.py")
   parser.add_argument(
       '--dataset', '-d',
       type=str,
-      required=True,
+      default = DATASET_PATH,
+      required=False,
       help='Dataset to visualize. No Default',
   )
   parser.add_argument(
@@ -50,7 +53,7 @@ if __name__ == '__main__':
   parser.add_argument(
       '--do_instances', '-di',
       dest='do_instances',
-      default=False,
+      default=True,
       action='store_true',
       help='Visualize instances too. Defaults to %(default)s',
   )
@@ -151,7 +154,10 @@ if __name__ == '__main__':
                      scan_names=scan_names,
                      label_names=label_names,
                      offset=FLAGS.offset,
-                     semantics=semantics, instances=instances and semantics)
+                     semantics=semantics, 
+                     instances=instances and semantics,
+                     objs_of_interest="config/objects.yaml",
+                     config =FLAGS.config)
 
   # print instructions
   print("To navigate:")
