@@ -6,8 +6,6 @@ import os
 import yaml
 import sys
 
-SEMANTIC_KITTI_API = "E:\\DATASETS\\Kitti\\semantic_kitti_api\\"
-sys.path.insert(1, SEMANTIC_KITTI_API)
 
 from SemanticKittiTool import SemanticKittiTool
 from auxiliary.laserscan import LaserScan, SemLaserScan
@@ -21,7 +19,7 @@ def getCurrentPath(filename):
         return os.path.dirname(os.path.abspath(__file__)) + '/' + filename
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser("./eagle_view_demo.py")
+  parser = argparse.ArgumentParser("./visualizer_demo.py")
   parser.add_argument(
       '--dataset', '-d',
       type=str,
@@ -33,7 +31,7 @@ if __name__ == '__main__':
       '--config', '-c',
       type=str,
       required=False,
-      default=  SEMANTIC_KITTI_API + "config/semantic-kitti.yaml",
+      default= "config/semantic-kitti.yaml",
       help='Dataset config file. Defaults to %(default)s',
   )
   parser.add_argument(
@@ -49,16 +47,6 @@ if __name__ == '__main__':
       default="00",
       required=False,
       help='Sequence to visualize. Defaults to %(default)s',
-  )
-  parser.add_argument(
-      '--predictions', '-p',
-      type=str,
-      default=None,
-      required=False,
-      help='Alternate location for labels, to use predictions folder. '
-      'Must point to directory containing the predictions in the proper format '
-      ' (see readme)'
-      'Defaults to %(default)s',
   )
   parser.add_argument(
       '--ignore_semantics', '-i',
@@ -101,7 +89,6 @@ if __name__ == '__main__':
   print("Config", FLAGS.config)
   print("Objs", FLAGS.obj)
   print("Sequence", FLAGS.sequence)
-  print("Predictions", FLAGS.predictions)
   print("ignore_semantics", FLAGS.ignore_semantics)
   print("do_instances", FLAGS.do_instances)
   print("ignore_safety", FLAGS.ignore_safety)
